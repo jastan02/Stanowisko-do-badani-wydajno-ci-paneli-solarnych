@@ -2,8 +2,8 @@
 Stanowisko do badani wydajności paneli solarnych - praca inżynierska 
 
 Autorzy:
-Jakub Stankiewicz
-Michał Stacherski
+Jakub Stankiewicz,
+Michał Stacherski,
 Bartosz Skowroński
 
 Opiekun:
