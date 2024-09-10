@@ -1,5 +1,5 @@
 # Stanowisko-do-badani-wydajno-ci-paneli-solarnych
-Stanowisko do badani wydajności paneli solarnych - praca inżynierska 
+Stanowisko do badania wydajności paneli solarnych - praca inżynierska 
 
 Autorzy:
 Jakub Stankiewicz,
