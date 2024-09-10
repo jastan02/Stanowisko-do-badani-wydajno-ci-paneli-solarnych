@@ -1,11 +1,18 @@
 #include <Wire.h>
 #include <INA3221.h>
+#include "DHT.h"
+#include <BH1750.h>
 
 
 #define INA3221_ADDRESS INA3221_ADDR40_GND 
 
+#define DHTPIN 23 
+#define DHTTYPE DHT11
+
 
 INA3221 ina3221(INA3221_ADDRESS);
+DHT dht(DHTPIN, DHTTYPE);
+BH1750 lightMeter(0x23);
 
 
 #define CHANNEL_1 INA3221_CH1 
@@ -18,7 +25,9 @@ void setup() {
 
 
   Wire.begin();
-  ina3221.begin(&Wire); 
+  ina3221.begin(&Wire);
+  dht.begin(); 
+  lightMeter.begin();
 
   
 }
@@ -78,6 +87,10 @@ void loop() {
   Serial.println(" mA");
 
   Serial.println("------------------------------------");
+
+  Serial.println((float)dht.readHumidity());
+  Serial.println((float)dht.readTemperature());
+  Serial.println(lightMeter.readLightLevel());
 
   delay(1000);
 }
