@@ -67,36 +67,44 @@ void setup() {
   }
 }
 
-void logDataToSD(float voltage1, float current1, float voltage2, float current2, float voltage3, float current3, float temperature, float humidity, float lightLevel, DateTime now) {
+void logDataToSD(float voltage1, float current1, float power1, float voltage2, float current2, float power2, float voltage3, float current3, float power3, float temperature, float humidity, float lightLevel, DateTime now) {
   // Otwieramy plik do zapisu
   File dataFile = SD.open("/dane.csv", FILE_APPEND);
+
+  dataFile.println("Voltage1;Current1;Power1;Voltage2;Current2;Power2;Voltage3;Current3;Power3;Temperature;Humidity;LightLevel;Date;Time");
 
   if (dataFile) {
     // Zapisz dane w formacie CSV: Voltage1, Current1, Voltage2, Current2, Voltage3, Current3, Temperature, Humidity, LightLevel, Date, Time
     dataFile.print(voltage1);
-    dataFile.print(",");
+    dataFile.print(";");
     dataFile.print(current1);
-    dataFile.print(",");
+    dataFile.print(";");
+    dataFile.print(power1);
+    dataFile.print(";");
     dataFile.print(voltage2);
-    dataFile.print(",");
+    dataFile.print(";");
     dataFile.print(current2);
-    dataFile.print(",");
+    dataFile.print(";");
+    dataFile.print(power2);
+    dataFile.print(";");
     dataFile.print(voltage3);
-    dataFile.print(",");
+    dataFile.print(";");
     dataFile.print(current3);
-    dataFile.print(",");
+    dataFile.print(";");
+    dataFile.print(power3);
+    dataFile.print(";");
     dataFile.print(temperature);
-    dataFile.print(",");
+    dataFile.print(";");
     dataFile.print(humidity);
-    dataFile.print(",");
+    dataFile.print(";");
     dataFile.print(lightLevel);
-    dataFile.print(",");
+    dataFile.print(";");
     dataFile.print(now.day(), DEC);
     dataFile.print("/");
     dataFile.print(now.month(), DEC);
     dataFile.print("/");
     dataFile.print(now.year(), DEC);
-    dataFile.print(",");
+    dataFile.print(";");
     dataFile.print(now.hour(), DEC);
     dataFile.print(":");
     dataFile.print(now.minute(), DEC);
@@ -116,12 +124,15 @@ void loop() {
   // Odczyt napięcia i prądu z kanałów INA3221
   float busVoltage1 = ina3221.getVoltage(CHANNEL_1);
   float current1_mA = ina3221.getCurrent(CHANNEL_1);
+  float power1 = busVoltage1 * (current1_mA/1000.0);
 
   float busVoltage2 = ina3221.getVoltage(CHANNEL_2);
   float current2_mA = ina3221.getCurrent(CHANNEL_2);
+  float power2 = busVoltage2 * (current2_mA/1000.0);
 
   float busVoltage3 = ina3221.getVoltage(CHANNEL_3);
   float current3_mA = ina3221.getCurrent(CHANNEL_3);
+  float power3 = busVoltage3 * (current3_mA/1000.0);
 
   // Odczyt temperatury i wilgotności z DHT11
   float temperature = dht.readTemperature();
@@ -184,7 +195,7 @@ void loop() {
   Serial.println(now.second(), DEC);
 
   // Zapisz dane na kartę SD
-  logDataToSD(busVoltage1, current1_mA, busVoltage2, current2_mA, busVoltage3, current3_mA, temperature, humidity, lightLevel, now);
+  logDataToSD(busVoltage1, current1_mA, power1, busVoltage2, current2_mA, power2, busVoltage3, current3_mA, power3, temperature, humidity, lightLevel, now);
 
   // Krótkie opóźnienie przed ponownym odczytem
   delay(1000);
