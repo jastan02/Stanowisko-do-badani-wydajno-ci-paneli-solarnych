@@ -13,8 +13,7 @@
 // Definicje pinów i adresów
 #define INA3221_ADDRESS INA3221_ADDR40_GND
 #define DHTTYPE DHT11
-#define SD_CS_PIN 5  // Pin CS do komunikacji z kartą SD
-
+#define SD_CS_PIN 13  // Pin CS do komunikacji z kartą SD
 
 // Czujniki
 INA3221 ina3221(INA3221_ADDRESS);
@@ -37,10 +36,12 @@ DallasTemperature sensor3(&oneWire3);
 #define CHANNEL_2 INA3221_CH2
 #define CHANNEL_3 INA3221_CH3
 
+const int analogPin = 25;  // GPIO25 (D25)
+
+
 void setup() {
   // Rozpoczęcie komunikacji szeregowej
   Serial.begin(115200);
-
   // Inicjalizacja magistrali I2C
   Wire.begin();
   ina3221.begin(&Wire);
@@ -67,28 +68,29 @@ void setup() {
      rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
    }
 
-   if (!bme.begin(0x76)) {
+  //Inicjalizacja BME
+  if (!bme.begin(0x76)) {
     Serial.println("Nie można połączyć się z BME280!");
     while (1);
   }
 
-   Inicjalizacja karty SD
+  //Inicjalizacja karty SD
   if (!SD.begin(SD_CS_PIN)) {
-      Serial.println("Nie można zainicjować karty SD!");
-      while (1);
-    } else {
-      Serial.println("Karta SD zainicjalizowana.");
-    }
+     Serial.println("Nie można zainicjować karty SD!");
+     while (1);
+   } else {
+     Serial.println("Karta SD zainicjalizowana.");
+   }
 }
 
 void logDataToSD(float voltage1, float current1, float voltage2, float current2, float voltage3, float current3, float temperature, float humidity, float lightLevel, DateTime now) {
-// Otwieramy plik do zapisu
-  File dataFile = SD.open("/dane.csv", FILE_APPEND);
+ // Otwieramy plik do zapisu
+File dataFile = SD.open("/dane.csv", FILE_APPEND);
 
-  dataFile.println("Voltage1;Current1;Voltage2;Current2;Voltage3;Current3;Temperature;Humidity;LightLevel;Date;Time");
+ dataFile.println("Voltage1;Current1;Voltage2;Current2;Voltage3;Current3;Temperature;Humidity;LightLevel;Date;Time");
 
-  if (dataFile) {
-  // Zapisz dane w formacie CSV: Voltage1, Current1, Voltage2, Current2, Voltage3, Current3, Temperature, Humidity, LightLevel, Date, Time
+if (dataFile) {
+    // Zapisz dane w formacie CSV: Voltage1, Current1, Voltage2, Current2, Voltage3, Current3, Temperature, Humidity, LightLevel, Date, Time
     dataFile.print(voltage1);
     dataFile.print(";");
     dataFile.print(current1);
@@ -96,7 +98,7 @@ void logDataToSD(float voltage1, float current1, float voltage2, float current2,
     dataFile.print(voltage2);
     dataFile.print(";");
     dataFile.print(current2);
-    dataFile.print(";");  
+    dataFile.print(";");
     dataFile.print(voltage3);
     dataFile.print(";");
     dataFile.print(current3);
@@ -120,11 +122,11 @@ void logDataToSD(float voltage1, float current1, float voltage2, float current2,
     dataFile.println(now.second(), DEC);
 
   // Zamykamy plik po zapisie
-  dataFile.close();
-  Serial.println("Dane zapisane na kartę SD.");
+    dataFile.close();
+    Serial.println("Dane zapisane na kartę SD.");
   } else {
-  Serial.println("Błąd otwarcia pliku na karcie SD.");
-}
+    Serial.println("Błąd otwarcia pliku na karcie SD.");
+  }
 }
 
 
@@ -149,6 +151,7 @@ void loop() {
     // Odczyt natężenia światła z BH1750
     float lightLevel = lightMeter.readLightLevel();
 
+
     sensor1.requestTemperatures();
     float temperatureC1 = sensor1.getTempCByIndex(0);
     Serial.print("Temp: ");
@@ -168,7 +171,7 @@ void loop() {
     Serial.println("°C");
 
     // Wyświetlanie wartości na ekranie TFT
-    tft.fillScreen(TFT_BLACK);  // Wyczyść ekran, aby uniknąć nakładania się tekstu
+    tft.fillScreen(TFT_BLACK);  
     tft.setCursor(0, 0); 
     tft.println("Warunki zew");
 
@@ -222,10 +225,10 @@ void loop() {
     tft.print(current3_mA);
     tft.println(" mA");
 
-    // Odczyt aktualnej daty i godziny z RTC
+  // Odczyt aktualnej daty i godziny z RTC
     DateTime now = rtc.now();
 
-    // Wyświetlanie danych w Serial Monitor
+    // // Wyświetlanie danych w Serial Monitor
     Serial.print("Channel 1 Voltage: ");
     Serial.print(busVoltage1);
     Serial.println(" V");
@@ -279,8 +282,8 @@ void loop() {
     Serial.print(':');
     Serial.println(now.second(), DEC);
 
-    // Zapisz dane na kartę SD
-   logDataToSD(busVoltage1, current1_mA,busVoltage2, current2_mA,busVoltage3, current3_mA,temperature, humidity, lightLevel, now);
+    // // Zapisz dane na kartę SD
+    logDataToSD(busVoltage1, current1_mA,busVoltage2, current2_mA,busVoltage3, current3_mA,temperature, humidity, lightLevel, now);
 
   // Krótkie opóźnienie przed ponownym odczytem
   delay(1000);
