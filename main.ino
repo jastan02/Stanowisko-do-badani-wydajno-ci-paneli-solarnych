@@ -6,20 +6,24 @@
 #include <OneWire.h>
 #include <SD.h>
 #include <SPI.h>
-#include <TFT_eSPI.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_ILI9341.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
 
 // Definicje pinów i adresów
 #define INA3221_ADDRESS INA3221_ADDR40_GND
 #define DHTTYPE DHT11
-#define SD_CS_PIN 13  // Pin CS do komunikacji z kartą SD
+#define SD_CS_PIN 15 
+#define TFT_CS   5
+#define TFT_RST  4
+#define TFT_DC   2
 
-// Czujniki
+//Definicja czujników
 INA3221 ina3221(INA3221_ADDRESS);
 BH1750 lightMeter(0x23);
 RTC_DS3231 rtc;
-TFT_eSPI tft = TFT_eSPI();
+Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 Adafruit_BME280 bme;
 const int oneWireBus1 = 14;
 const int oneWireBus2 = 27;
@@ -31,7 +35,7 @@ DallasTemperature sensor1(&oneWire1);
 DallasTemperature sensor2(&oneWire2);
 DallasTemperature sensor3(&oneWire3);
 
-// Kanały
+//Definicja kanałów dla INA3221
 #define CHANNEL_1 INA3221_CH1
 #define CHANNEL_2 INA3221_CH2
 #define CHANNEL_3 INA3221_CH3
@@ -42,6 +46,7 @@ const int analogPin = 25;  // GPIO25 (D25)
 void setup() {
   // Rozpoczęcie komunikacji szeregowej
   Serial.begin(115200);
+  
   // Inicjalizacja magistrali I2C
   Wire.begin();
   ina3221.begin(&Wire);
@@ -53,8 +58,8 @@ void setup() {
   // Inicjalizacja ekranu TFT
   tft.begin();
   tft.setRotation(1);  // Ustawienie orientacji wyświetlacza
-  tft.fillScreen(TFT_BLACK);  // Wyczyść ekran
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);  // Ustaw kolor tekstu
+  tft.fillScreen(ILI9341_BLACK);  // Wyczyść ekran
+  tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);  // Ustaw kolor tekstu
   tft.setTextSize(2);  // Ustaw rozmiar tekstu
 
   //Inicjalizacja RTC
@@ -83,75 +88,83 @@ void setup() {
    }
 }
 
-void logDataToSD(float voltage1, float current1, float voltage2, float current2, float voltage3, float current3, float temperature, float humidity, float lightLevel, DateTime now) {
- // Otwieramy plik do zapisu
-File dataFile = SD.open("/dane.csv", FILE_APPEND);
+//funckja od zapisu do pliku csv na karcie SD
+void logDataToSD(float voltage1, float current1, float power1, float voltage2, float current2, float power2, float voltage3, float current3, float power3, float temperature,
+ float humidity, float pressure, float lightLevel, DateTime now) {
+  // Otwieramy plik do zapisu
+  File dataFile = SD.open("/dane.csv", FILE_APPEND);
 
- dataFile.println("Voltage1;Current1;Voltage2;Current2;Voltage3;Current3;Temperature;Humidity;LightLevel;Date;Time");
+  dataFile.println("Voltage1;Current1;Power1;Voltage2;Current2;Power2;Voltage3;Current3;Power3;Temperature;Humidity;Pressure;LightLevel;Date;Time");
 
-if (dataFile) {
-    // Zapisz dane w formacie CSV: Voltage1, Current1, Voltage2, Current2, Voltage3, Current3, Temperature, Humidity, LightLevel, Date, Time
-    dataFile.print(voltage1);
-    dataFile.print(";");
-    dataFile.print(current1);
-    dataFile.print(";");
-    dataFile.print(voltage2);
-    dataFile.print(";");
-    dataFile.print(current2);
-    dataFile.print(";");
-    dataFile.print(voltage3);
-    dataFile.print(";");
-    dataFile.print(current3);
-    dataFile.print(";");
-    dataFile.print(temperature);
-    dataFile.print(";");
-    dataFile.print(humidity);
-    dataFile.print(";");
-    dataFile.print(lightLevel);
-    dataFile.print(";");
-    dataFile.print(now.day(), DEC);
-    dataFile.print("/");
-    dataFile.print(now.month(), DEC);
-    dataFile.print("/");
-    dataFile.print(now.year(), DEC);
-    dataFile.print(";");
-    dataFile.print(now.hour(), DEC);
-    dataFile.print(":");
-    dataFile.print(now.minute(), DEC);
-    dataFile.print(":");
-    dataFile.println(now.second(), DEC);
+  if (dataFile) {
+      dataFile.print(voltage1);
+      dataFile.print(";");
+      dataFile.print(current1);
+      dataFile.print(";");
+      dataFile.print(power1);
+      dataFile.print(";");
+      dataFile.print(voltage2);
+      dataFile.print(";");
+      dataFile.print(current2);
+      dataFile.print(";");
+      dataFile.print(power2);
+      dataFile.print(";");
+      dataFile.print(voltage3);
+      dataFile.print(";");
+      dataFile.print(current3);
+      dataFile.print(";");
+      dataFile.print(power3);
+      dataFile.print(";");
+      dataFile.print(temperature);
+      dataFile.print(";");
+      dataFile.print(humidity);
+      dataFile.print(";");
+      dataFile.print(pressure);
+      dataFile.print(";");
+      dataFile.print(lightLevel);
+      dataFile.print(";");
+      dataFile.print(now.day(), DEC);
+      dataFile.print("/");
+      dataFile.print(now.month(), DEC);
+      dataFile.print("/");
+      dataFile.print(now.year(), DEC);
+      dataFile.print(";");
+      dataFile.print(now.hour(), DEC);
+      dataFile.print(":");
+      dataFile.print(now.minute(), DEC);
+      dataFile.print(":");
+      dataFile.println(now.second(), DEC);
 
-  // Zamykamy plik po zapisie
-    dataFile.close();
-    Serial.println("Dane zapisane na kartę SD.");
-  } else {
-    Serial.println("Błąd otwarcia pliku na karcie SD.");
-  }
+    // Zamykamy plik po zapisie
+      dataFile.close();
+      Serial.println("Dane zapisane na kartę SD.");
+    } else {
+      Serial.println("Błąd otwarcia pliku na karcie SD.");
+    }
 }
 
 
 void loop() {
-
-    // Odczyt napięcia i prądu z kanałów INA3221
+    // Odczyt napięcia i prądu z kanałów INA3221 oraz obliczenie mocy
     float busVoltage1 = ina3221.getVoltage(CHANNEL_1);
     float current1_mA = ina3221.getCurrent(CHANNEL_1);
-
+    float power1 = busVoltage1 * (current1_mA/1000);
 
     float busVoltage2 = ina3221.getVoltage(CHANNEL_2);
     float current2_mA = ina3221.getCurrent(CHANNEL_2);
-
+    float power2 = busVoltage2 * (current2_mA/1000);
 
     float busVoltage3 = ina3221.getVoltage(CHANNEL_3);
     float current3_mA = ina3221.getCurrent(CHANNEL_3);
+    float power3 = busVoltage3 * (current3_mA/1000);
 
-    float temperature = bme.readTemperature();  // Odczyt temperatury w °C
-    float cisnienie = bme.readPressure() / 100.0F;  // Odczyt ciśnienia w hPa
+    //odczyt warunków atmosferycznych
+    float temperature = bme.readTemperature();  
+    float cisnienie = bme.readPressure() / 100.0F; 
     float humidity = bme.readHumidity();
-
-    // Odczyt natężenia światła z BH1750
     float lightLevel = lightMeter.readLightLevel();
 
-
+    //odczyt temperatury czujników pod panelami
     sensor1.requestTemperatures();
     float temperatureC1 = sensor1.getTempCByIndex(0);
     Serial.print("Temp: ");
@@ -170,8 +183,9 @@ void loop() {
     Serial.print(temperatureC3);
     Serial.println("°C");
 
-    // Wyświetlanie wartości na ekranie TFT
-    tft.fillScreen(TFT_BLACK);  
+    //Wyświetlanie wartości na ekranie TFT 
+    //warunki atmosferyczne
+    tft.fillScreen(ILI9341_BLACK);  
     tft.setCursor(0, 0); 
     tft.println("Warunki zew");
 
@@ -191,7 +205,8 @@ void loop() {
     tft.print(cisnienie);
     tft.println(" hPa");
 
-  ////////////////////////////
+    ////////////////////////////
+    //panel1
     tft.setCursor(160, 0); 
     tft.println("Panel 1");
 
@@ -202,7 +217,17 @@ void loop() {
     tft.setCursor(160,40);
     tft.print(current1_mA);
     tft.println(" mA");
+
+    tft.setCursor(160,60);
+    tft.print(power1);
+    tft.println(" W");
+
+    tft.setCursor(160,80);
+    tft.print(temperatureC1);
+    tft.println(" C");
+
     ////////////////////////////
+    //panel2
     tft.setCursor(0, 120); 
     tft.println("Panel 2");
 
@@ -213,7 +238,17 @@ void loop() {
     tft.setCursor(0,160);
     tft.print(current2_mA);
     tft.println(" mA");
-  ////////////////////////////
+
+    tft.setCursor(0,180);
+    tft.print(power2);
+    tft.println(" W");
+
+    tft.setCursor(0,200);
+    tft.print(temperatureC2);
+    tft.println(" C");
+
+    ////////////////////////////
+    //panel3
     tft.setCursor(160, 120); 
     tft.println("Panel 3");
 
@@ -225,10 +260,18 @@ void loop() {
     tft.print(current3_mA);
     tft.println(" mA");
 
-  // Odczyt aktualnej daty i godziny z RTC
+    tft.setCursor(160,180);
+    tft.print(power3);
+    tft.println(" W");
+
+    tft.setCursor(160,200);
+    tft.print(temperatureC3);
+    tft.println(" C");
+
+    // Odczyt aktualnej daty i godziny z RTC
     DateTime now = rtc.now();
 
-    // // Wyświetlanie danych w Serial Monitor
+    //Wyświetlanie danych w Serial Monitor
     Serial.print("Channel 1 Voltage: ");
     Serial.print(busVoltage1);
     Serial.println(" V");
@@ -236,6 +279,10 @@ void loop() {
     Serial.print("Channel 1 Current: ");
     Serial.print(current1_mA);
     Serial.println(" mA");
+
+    Serial.print("Channel 1 Power: ");
+    Serial.print(power1);
+    Serial.println(" W");
 
     Serial.print("Channel 2 Voltage: ");
     Serial.print(busVoltage2);
@@ -245,6 +292,10 @@ void loop() {
     Serial.print(current2_mA);
     Serial.println(" mA");
 
+    Serial.print("Channel 2 Power: ");
+    Serial.print(power2);
+    Serial.println(" W");
+
     Serial.print("Channel 3 Voltage: ");
     Serial.print(busVoltage3);
     Serial.println(" V");
@@ -252,6 +303,10 @@ void loop() {
     Serial.print("Channel 3 Current: ");
     Serial.print(current3_mA);
     Serial.println(" mA");
+
+    Serial.print("Channel 3 Power: ");
+    Serial.print(power3);
+    Serial.println(" W");
 
     Serial.print("Temperature: ");
     Serial.print(temperature);
@@ -283,7 +338,7 @@ void loop() {
     Serial.println(now.second(), DEC);
 
     // // Zapisz dane na kartę SD
-    logDataToSD(busVoltage1, current1_mA,busVoltage2, current2_mA,busVoltage3, current3_mA,temperature, humidity, lightLevel, now);
+    logDataToSD(busVoltage1, current1_mA, power1, busVoltage2, current2_mA, power2, busVoltage3, current3_mA, power3, temperature, humidity, cisnienie, lightLevel, now);
 
   // Krótkie opóźnienie przed ponownym odczytem
   delay(1000);
