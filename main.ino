@@ -40,6 +40,9 @@ DallasTemperature sensor3(&oneWire3);
 #define CHANNEL_2 INA3221_CH2
 #define CHANNEL_3 INA3221_CH3
 
+const int analogPin = 25;  // GPIO25 (D25)
+
+
 void setup() {
   // Rozpoczęcie komunikacji szeregowej
   Serial.begin(115200);
@@ -72,9 +75,9 @@ void setup() {
 
   //Inicjalizacja BME
   if (!bme.begin(0x76)) {
-     Serial.println("Nie można połączyć się z BME280!");
-     while (1);
-   }
+    Serial.println("Nie można połączyć się z BME280!");
+    while (1);
+  }
 
   //Inicjalizacja karty SD
   if (!SD.begin(SD_CS_PIN)) {
@@ -85,7 +88,8 @@ void setup() {
    }
 }
 
-void logDataToSD(float voltage1, float current1, float power1, float tempp1, float voltage2, float current2, float power2, float tempp2, float voltage3, float current3, float power3, float tempp3, float lightLevel, DateTime now) {
+void logDataToSD(float voltage1, float current1, float power1, float tempp1, float voltage2, float current2, float power2, float tempp2, float voltage3, float current3, float power3, float tempp3, float temperature,
+ float humidity, float pressure, float lightLevel, DateTime now) {
   
   // Sprawdzamy, czy plik już istnieje
   bool fileExists = SD.exists("/dane.csv");
@@ -95,7 +99,7 @@ void logDataToSD(float voltage1, float current1, float power1, float tempp1, flo
 
   // Jeśli plik nie istnieje, dodajemy nagłówek
   if (!fileExists && dataFile) {
-    dataFile.println("Voltage1 (V);Current1 (mA);Power1 (mW);Tempeature P1 (C);Voltage2 (V);Current2 (mA);Power2 (mW);Tempeature P2 (C);Voltage3 (V);Current3 (mA);Power3 (mW);Tempeature P3 (C);temperature (C);humidity (%);pressure (hPa;)LightLevel (lux);Date;Time");
+    dataFile.println("Voltage1 (V);Current1 (mA);Power1 (mW);Tempeature P1 (C);Voltage2 (V);Current2 (mA);Power2 (mW);Tempeature P2 (C);Voltage3 (V);Current3 (mA);Power3 (mW);Tempeature P3 (C);Temperature (C);Humidity (%);Pressure (hPa);LightLevel (lux);Date;Time");
   }
 
   if (dataFile) {
@@ -154,7 +158,7 @@ void logDataToSD(float voltage1, float current1, float power1, float tempp1, flo
 
 
 void loop() {
-    //Odczyt napięcia i prądu z kanałów INA3221 oraz obliczenie mocy
+    // Odczyt napięcia i prądu z kanałów INA3221 oraz obliczenie mocy
     float busVoltage1 = ina3221.getVoltage(CHANNEL_1);
     float current1_mA = ina3221.getCurrent(CHANNEL_1);
     float power1 = busVoltage1 * current1_mA;
@@ -167,7 +171,7 @@ void loop() {
     float current3_mA = ina3221.getCurrent(CHANNEL_3);
     float power3 = busVoltage3 * current3_mA;
 
-    // //odczyt warunków atmosferycznych
+    //odczyt warunków atmosferycznych
     float temperature = bme.readTemperature();  
     float cisnienie = bme.readPressure() / 100.0F; 
     float humidity = bme.readHumidity();
@@ -346,9 +350,10 @@ void loop() {
     Serial.print(':');
     Serial.println(now.second(), DEC);
 
-    // Zapisz dane na kartę SD
-    logDataToSD(busVoltage1, current1_mA, power1, temperatureC1, busVoltage2, current2_mA, power2, temperatureC2, busVoltage3, current3_mA, power3, temperatureC3,temperature,humidity,cisnienie lightLevel, now);
+    // // Zapisz dane na kartę SD
+    logDataToSD(busVoltage1, current1_mA, power1, temperatureC1, busVoltage2, current2_mA, power2, temperatureC2, busVoltage3, current3_mA, power3, temperatureC3, temperature, humidity, cisnienie, lightLevel, now);
 
   // Krótkie opóźnienie przed ponownym odczytem
   delay(1000);
 }
+
