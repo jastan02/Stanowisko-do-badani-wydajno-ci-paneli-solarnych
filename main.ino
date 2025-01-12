@@ -40,9 +40,6 @@ DallasTemperature sensor3(&oneWire3);
 #define CHANNEL_2 INA3221_CH2
 #define CHANNEL_3 INA3221_CH3
 
-const int analogPin = 25;  // GPIO25 (D25)
-
-
 void setup() {
   // Rozpoczęcie komunikacji szeregowej
   Serial.begin(115200);
@@ -99,7 +96,7 @@ void logDataToSD(float voltage1, float current1, float power1, float tempp1, flo
 
   // Jeśli plik nie istnieje, dodajemy nagłówek
   if (!fileExists && dataFile) {
-    dataFile.println("Voltage1 (V);Current1 (mA);Power1 (mW);Tempeature P1 (C);Voltage2 (V);Current2 (mA);Power2 (mW);Tempeature P2 (C);Voltage3 (V);Current3 (mA);Power3 (mW);Tempeature P3 (C);Temperature (C);Humidity (%);Pressure (hPa);LightLevel (lux);Date;Time");
+    dataFile.println("Voltage1 (V);Current1 (A);Power1 (W);Tempeature P1 (C);Voltage2 (V);Current2 (A);Power2 (W);Tempeature P2 (C);Voltage3 (V);Current3 (A);Power3 (W);Tempeature P3 (C);Temperature (C);Humidity (%);Pressure (hPa);LightLevel (lux);Date;Time");
   }
 
   if (dataFile) {
@@ -354,6 +351,6 @@ void loop() {
     logDataToSD(busVoltage1, current1_mA, power1, temperatureC1, busVoltage2, current2_mA, power2, temperatureC2, busVoltage3, current3_mA, power3, temperatureC3, temperature, humidity, cisnienie, lightLevel, now);
 
   // Krótkie opóźnienie przed ponownym odczytem
-  delay(1000);
+  delay(5000);
 }
 
