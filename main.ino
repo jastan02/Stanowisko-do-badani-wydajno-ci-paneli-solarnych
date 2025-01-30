@@ -96,7 +96,7 @@ void logDataToSD(float voltage1, float current1, float power1, float tempp1, flo
 
   // Jeśli plik nie istnieje, dodajemy nagłówek
   if (!fileExists && dataFile) {
-    dataFile.println("Voltage1 (V);Current1 (A);Power1 (W);Tempeature P1 (C);Voltage2 (V);Current2 (A);Power2 (W);Tempeature P2 (C);Voltage3 (V);Current3 (A);Power3 (W);Tempeature P3 (C);Temperature (C);Humidity (%);Pressure (hPa);LightLevel (lux);Date;Time");
+    dataFile.println("Napięcie1 (V);Natężenie1 (A);Moc1 (W);Tempeatura P1 (C);Napięcie2 (V);Natężenie2 (A);Moc2 (W);Tempeatura P2 (C);Napięcie3 (V);Natężenie3 (A);Moc3 (W);Tempeatura P3 (C);Temp (C);Wilgotność (%);Ciśnienie (hPa);Natężenie światła (lux);Data;Godzina");
   }
 
   if (dataFile) {
@@ -157,16 +157,16 @@ void logDataToSD(float voltage1, float current1, float power1, float tempp1, flo
 void loop() {
     // Odczyt napięcia i prądu z kanałów INA3221 oraz obliczenie mocy
     float busVoltage1 = ina3221.getVoltage(CHANNEL_1);
-    float current1_mA = ina3221.getCurrent(CHANNEL_1);
-    float power1 = busVoltage1 * current1_mA;
+    float current1_A = ina3221.getCurrent(CHANNEL_1);
+    float power1 = busVoltage1 * current1_A;
 
     float busVoltage2 = ina3221.getVoltage(CHANNEL_2);
-    float current2_mA = ina3221.getCurrent(CHANNEL_2);
-    float power2 = busVoltage2 * current2_mA;
+    float current2_A = ina3221.getCurrent(CHANNEL_2);
+    float power2 = busVoltage2 * current2_A;
 
     float busVoltage3 = ina3221.getVoltage(CHANNEL_3);
-    float current3_mA = ina3221.getCurrent(CHANNEL_3);
-    float power3 = busVoltage3 * current3_mA;
+    float current3_A = ina3221.getCurrent(CHANNEL_3);
+    float power3 = busVoltage3 * current3_A;
 
     //odczyt warunków atmosferycznych
     float temperature = bme.readTemperature();  
@@ -196,84 +196,104 @@ void loop() {
     //Wyświetlanie wartości na ekranie TFT 
     //warunki atmosferyczne
     tft.fillScreen(ILI9341_BLACK);  
+    tft.setTextColor(ILI9341_RED);
     tft.setCursor(0, 0); 
     tft.println("Warunki zew");
 
+    tft.setTextColor(ILI9341_RED);
     tft.setCursor(0,20);
     tft.print(lightLevel);
     tft.println(" lx");
 
+    tft.setTextColor(ILI9341_RED);
     tft.setCursor(0,40);
     tft.print(temperature);
     tft.println(" C");
 
+    tft.setTextColor(ILI9341_RED);
     tft.setCursor(0,60);
     tft.print(humidity);
     tft.println(" %");
 
+    tft.setTextColor(ILI9341_RED);
     tft.setCursor(0,80);
     tft.print(cisnienie);
     tft.println(" hPa");
 
     ////////////////////////////
     //panel1
+    tft.setTextColor(ILI9341_BLUE);
     tft.setCursor(160, 0); 
     tft.println("Panel 1");
 
+    tft.setTextColor(ILI9341_BLUE);
     tft.setCursor(160,20);
     tft.print(busVoltage1);
     tft.println(" V");
 
+    tft.setTextColor(ILI9341_BLUE);
     tft.setCursor(160,40);
-    tft.print(String(current1_mA,3));
+    tft.print(String(current1_A,3));
     tft.println(" mA");
 
+    tft.setTextColor(ILI9341_BLUE);
     tft.setCursor(160,60);
     tft.print(power1);
     tft.println(" W");
 
+    tft.setTextColor(ILI9341_BLUE);
     tft.setCursor(160,80);
     tft.print(temperatureC1);
     tft.println(" C");
 
     ////////////////////////////
     //panel2
+    tft.setTextColor(ILI9341_YELLOW);
     tft.setCursor(0, 120); 
     tft.println("Panel 2");
 
+    tft.setTextColor(ILI9341_YELLOW);
     tft.setCursor(0,140);
     tft.print(busVoltage2);
     tft.println(" V");
 
+    tft.setTextColor(ILI9341_YELLOW);
     tft.setCursor(0,160);
-    tft.print(String(current2_mA,3));
+    tft.print(String(current2_A,3));
     tft.println(" mA");
 
+    tft.setTextColor(ILI9341_YELLOW);
     tft.setCursor(0,180);
     tft.print(power2);
     tft.println(" W");
 
+    tft.setTextColor(ILI9341_YELLOW);
     tft.setCursor(0,200);
     tft.print(temperatureC2);
     tft.println(" C");
 
     ////////////////////////////
     //panel3
+    tft.setTextColor(ILI9341_GREEN);
     tft.setCursor(160, 120); 
     tft.println("Panel 3");
 
+    tft.setTextColor(ILI9341_GREEN);
     tft.setCursor(160,140);
     tft.print(busVoltage3);
     tft.println(" V");
 
+    tft.setTextColor(ILI9341_GREEN);
     tft.setCursor(160,160);
-    tft.print(String(current3_mA,3));
+    tft.print(String(current3_A,3));
     tft.println(" mA");
 
+    tft.setTextColor(ILI9341_GREEN);
     tft.setCursor(160,180);
     tft.print(power3);
     tft.println(" W");
 
+    tft.setTextColor(ILI9341_GREEN);
     tft.setCursor(160,200);
     tft.print(temperatureC3);
     tft.println(" C");
@@ -287,7 +307,7 @@ void loop() {
     Serial.println(" V");
 
     Serial.print("Channel 1 Current: ");
-    Serial.print(current1_mA);
+    Serial.print(current1_A);
     Serial.println(" mA");
 
     Serial.print("Channel 1 Power: ");
@@ -299,7 +319,7 @@ void loop() {
     Serial.println(" V");
 
     Serial.print("Channel 2 Current: ");
-    Serial.print(current2_mA);
+    Serial.print(current2_A);
     Serial.println(" mA");
 
     Serial.print("Channel 2 Power: ");
@@ -311,7 +331,7 @@ void loop() {
     Serial.println(" V");
 
     Serial.print("Channel 3 Current: ");
-    Serial.print(current3_mA);
+    Serial.print(current3_A);
     Serial.println(" mA");
 
     Serial.print("Channel 3 Power: ");
@@ -348,7 +368,7 @@ void loop() {
     Serial.println(now.second(), DEC);
 
     // // Zapisz dane na kartę SD
-    logDataToSD(busVoltage1, current1_mA, power1, temperatureC1, busVoltage2, current2_mA, power2, temperatureC2, busVoltage3, current3_mA, power3, temperatureC3, temperature, humidity, cisnienie, lightLevel, now);
+    logDataToSD(busVoltage1, current1_A, power1, temperatureC1, busVoltage2, current2_A, power2, temperatureC2, busVoltage3, current3_A, power3, temperatureC3, temperature, humidity, cisnienie, lightLevel, now);
 
   // Krótkie opóźnienie przed ponownym odczytem
   delay(5000);
